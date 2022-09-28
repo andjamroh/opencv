@@ -35,7 +35,7 @@ def drawText(frame, txt, location, color = (50,170,50)):
 
 if not os.path.isfile('goturn.prototxt') or not os.path.isfile('goturn.caffemodel'):
     print("Downloading GOTURN model zip file")
-    urllib.request.urlretrieve('https://www.dropbox.com/sh/77frbrkmf9ojfm6/AACgY7-wSfj-LIyYcOgUSZ0Ua?dl=1', 'GOTURN.zip')
+    urllib.request.urlretrieve('https://www.dropbox.com/s/exg6vk54mq6nip4/goturn.zip?dl=0', 'GOTURN.zip')
     
     # Uncompress the file
     os.system("tar -xvf GOTURN.zip")
