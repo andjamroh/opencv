@@ -69,6 +69,7 @@ while True:
     frame_hsv = cv2.cvtColor(frame_blur, cv2.COLOR_BGR2HSV)
     ## TODO:
     # Change here for what color to find in the hsv spectrum
+    # HSV of blue : (105,150,80), (130,255,255)
     frame_thresh = cv2.inRange(frame_hsv, (105,150,80), (130,255,255))
 
     shapes = findShapes(frame_thresh)
@@ -76,10 +77,18 @@ while True:
 
     centers = []
     for shape in shapes:
+        ## SQUARE
+        # [0] [1]
+        # [3] [2]
+        # row = [-x-][0]
+        # col = [-x-][1] 
         left_mid = (mean([shape[0][0], shape[3][0]]), mean([shape[0][1], shape[3][1]]))
         right_mid = (mean([shape[1][0], shape[2][0]]), mean([shape[1][1], shape[2][1]]))
         top_mid = (mean([shape[0][0], shape[1][0]]), mean([shape[0][1], shape[1][1]]))
         bot_mid = (mean([shape[2][0], shape[3][0]]), mean([shape[2][1], shape[3][1]]))
+
+        area = (shape[0][1] + shape[1][1]) * (shape[1][0] + shape[2][0])
+        print(area)
         #cv2.line(frame, left_mid, right_mid, (255,0,255), 3)
         #cv2.line(frame, top_mid, bot_mid, (255,0,255), 3)
         center = (mean([left_mid[0], right_mid[0]]), mean([top_mid[1], bot_mid[1]]))
