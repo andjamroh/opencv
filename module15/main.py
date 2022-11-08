@@ -3,6 +3,7 @@ import sys
 import numpy as np
 import time
 from statistics import median
+from math import sqrt
 PY3 = sys.version_info[0] == 3
 
 FINDSHAPES = 0
@@ -12,6 +13,7 @@ image_filter = FINDSHAPES
 CAMERA = 2
 THREESQUARES = 3
 FOURSQUARES = 4
+THREESQUARESCENTER = 5
 image_source = CAMERA
 
 image_print = False
@@ -36,7 +38,7 @@ def findShapes(img):
             contours, _hierarchy = cv2.findContours(bin, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
             for cnt in contours:
                 cnt_len = cv2.arcLength(cnt, True)
-                cnt = cv2.approxPolyDP(cnt, 0.01*cnt_len, True)
+                cnt = cv2.approxPolyDP(cnt, 0.02*cnt_len, True)
                 if len(cnt) == 4 and cv2.contourArea(cnt) > 1000 and cv2.isContourConvex(cnt):
                     x,y,w,h = cv2.boundingRect(cnt)
                     cnt = cnt.reshape(-1, 2)
@@ -71,6 +73,7 @@ shape_cnt_history_2nd_lvl = []
 
 img_loc_3 = "C:/Users/ajroh/source/repos/opencv/module15/3squares.png"
 img_loc_4 = "C:/Users/ajroh/source/repos/opencv/module15/4squares.png"
+img_loc_3_centered = "C:/Users/ajroh/source/repos/opencv/module15/3squarescentered.png"
 
 while True:
     time.sleep(0.03)
@@ -82,8 +85,15 @@ while True:
         frame = cv2.imread(img_loc_3, cv2.IMREAD_COLOR)
     elif image_source == FOURSQUARES:
         frame = cv2.imread(img_loc_4, cv2.IMREAD_COLOR)
+    elif image_source == THREESQUARESCENTER:
+        frame = cv2.imread(img_loc_3_centered, cv2.IMREAD_COLOR)
 
     frame_draw = np.copy(frame)
+    
+    num_rows, num_cols = frame_draw.shape[:2]
+    img_center = (num_cols//2,num_rows//2)
+    cv2.line(frame_draw, (num_cols//2,0), (num_cols//2,num_cols), (0,0,255), 3)
+    cv2.line(frame_draw, (0,num_rows//2), (num_cols,num_rows//2), (0,0,255), 3)
 
     frame_blur = cv2.blur(frame, (13,13))
 
@@ -110,6 +120,37 @@ while True:
         elif image_filter == FINDSHAPES:
             shapes, coords = findShapes(frame_thresh)
             cv2.drawContours(frame_draw, shapes, -1, (0,255,0), 3) 
+            centers = []
+            for coord in coords:
+                x = coord[0]
+                y = coord[1]
+                w = coord[2]
+                h = coord[3]
+                cv2.circle(frame_draw, (x,y), 5, (255,0,255), 3)
+                cv2.circle(frame_draw, (x+w,y), 5, (255,0,255), 3)
+                cv2.circle(frame_draw, (x+w,y+h), 5, (255,0,255), 3)
+                cv2.circle(frame_draw, (x,y+h), 5, (255,0,255), 3)
+                centers.append((x+w//2,y+h//2))
+            centered = False
+            if len(centers) > 0:
+                if len(centers) == 1:
+                    do_nothing = True
+                elif len(centers) == 2:
+                    do_nothing = True
+                elif len(centers) == 3:
+                    tri_center = ((centers[0][0]+centers[1][0]+centers[2][0])//3,
+                                (centers[0][1]+centers[1][1]+centers[2][1])//3)
+                    cv2.circle(frame_draw, np.uint(tri_center), 5, (255,255,0), 3)
+                    x_dist = abs(tri_center[0]-img_center[0])
+                    y_dist = abs(tri_center[1]-img_center[1])
+                    if x_dist < num_cols//15 and y_dist < num_rows//15:
+                        centered = True
+                else:
+                    do_nothing = True
+            if centered:
+                cv2.putText(frame_draw, 'Centered', (25,25), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 0), 2)
+            else:
+                cv2.putText(frame_draw, 'Not Centered', (25,25), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 0), 2)
             if shape_cnt_history is None or len(shape_cnt_history) < 30:
                 if (len(shapes) > 0):
                     shape_cnt_history.append(len(shapes))
@@ -129,6 +170,9 @@ while True:
             t = time.localtime()
             current_time = time.strftime("%H:%M:%S", t)
             print("Exception Found at " + current_time + " @ Print Exception")
+    
+
+
 
     cv2.imshow(win_cam, frame)
     cv2.imshow(win_thresh, frame_thresh)
@@ -147,6 +191,8 @@ while True:
         image_source = THREESQUARES
     elif key == ord('4'):
         image_source = FOURSQUARES
+    elif key == ord('5'):
+        image_source = THREESQUARESCENTER
     elif key == ord('P') or key == ord('p'):
         image_print = not image_print
     
