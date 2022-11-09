@@ -71,9 +71,9 @@ shape_cnt = 0
 shape_cnt_history = []
 shape_cnt_history_2nd_lvl = []
 
-img_loc_3 = "C:/Users/ajroh/source/repos/opencv/module15/3squares.png"
-img_loc_4 = "C:/Users/ajroh/source/repos/opencv/module15/4squares.png"
-img_loc_3_centered = "C:/Users/ajroh/source/repos/opencv/module15/3squarescentered.png"
+img_loc_3 = "C:/Users/ajroh/repos/opencv_new/module15/3squares.png"
+img_loc_4 = "C:/Users/ajroh/repos/opencv_new/module15/4squares.png"
+img_loc_3_centered = "C:/Users/ajroh/repos/opencv_new/module15/3squarescentered.png"
 
 while True:
     time.sleep(0.03)
@@ -133,20 +133,33 @@ while True:
                 centers.append((x+w//2,y+h//2))
             centered = False
             if len(centers) > 0:
-                if len(centers) == 1:
-                    do_nothing = True
-                elif len(centers) == 2:
-                    do_nothing = True
-                elif len(centers) == 3:
-                    tri_center = ((centers[0][0]+centers[1][0]+centers[2][0])//3,
-                                (centers[0][1]+centers[1][1]+centers[2][1])//3)
-                    cv2.circle(frame_draw, np.uint(tri_center), 5, (255,255,0), 3)
-                    x_dist = abs(tri_center[0]-img_center[0])
-                    y_dist = abs(tri_center[1]-img_center[1])
-                    if x_dist < num_cols//15 and y_dist < num_rows//15:
-                        centered = True
-                else:
-                    do_nothing = True
+                sumx = 0
+                sumy = 0
+                for c in centers:
+                    sumx += c[0]
+                    sumy += c[1]
+                sumx = sumx//len(centers)
+                sumy = sumy//len(centers)
+                cv2.circle(frame_draw, (sumx,sumy), 5, (255,255,0), 3)
+                x_dist = abs(sumx-img_center[0])
+                y_dist = abs(sumy-img_center[1])
+                print((sumx,num_cols//15),(sumy,num_rows//15))
+                if (x_dist < num_cols//15 and y_dist < num_rows//15):
+                    centered = True
+            #    if len(centers) == 1:
+            #         do_nothing = True
+            #     elif len(centers) == 2:
+            #         do_nothing = True
+            #     elif len(centers) == 3:
+            #         tri_center = ((centers[0][0]+centers[1][0]+centers[2][0])//3,
+            #                     (centers[0][1]+centers[1][1]+centers[2][1])//3)
+                    
+            #         x_dist = abs(tri_center[0]-img_center[0])
+            #         y_dist = abs(tri_center[1]-img_center[1])
+            #         if x_dist < num_cols//15 and y_dist < num_rows//15:
+            #             centered = True
+            #     else: 
+            #         do_nothing = True
             if centered:
                 cv2.putText(frame_draw, 'Centered', (25,25), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (255, 255, 0), 2)
             else:
